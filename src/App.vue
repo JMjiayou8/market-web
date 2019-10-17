@@ -48,6 +48,10 @@ div {
   text-align: center;
   text-shadow: 1px 2px 8px rgba(1, 21, 59, 0.004);
   background: url("./assets/images/title-bg.png") no-repeat center/cover;
+  span {
+    font-size: 32px;
+    margin-left: 10px;
+  }
 }
 
 .page-body {

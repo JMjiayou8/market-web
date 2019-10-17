@@ -8,10 +8,20 @@ const routes = [
     path: '/',
     redirect: '/index'
   },
-  {//酒店首页
+  {//首页
     path: '/index',
     name: 'index',
     component: () => import('@/views/index.vue'),
+  },
+  {//活动
+    path: '/market',
+    name: 'market',
+    component: () => import('@/views/market.vue'),
+  },
+  {//地市
+    path: '/area',
+    name: 'area',
+    component: () => import('@/views/area.vue'),
   },
 ]
 
