@@ -47,10 +47,10 @@ export default {
         slidesPerView: 3,
         spaceBetween: 30,
         slidesPerGroup: 3,
-        autoplay: {
-          delay: 3000,
-          disableOnInteraction: false
-        },
+        // autoplay: {
+        //   delay: 3000,
+        //   disableOnInteraction: false
+        // },
         // loop: true,
         // loopFillGroupWithBlank: true,
         pagination: {
@@ -58,6 +58,7 @@ export default {
           clickable: true
         },
       },
+      xAxisData:[],
       part1Data: [],
       part2data: [
         { "title": "兰州市", "num": [] },
@@ -75,31 +76,48 @@ export default {
         { "title": "陇南市", "num": [] },
         { "title": "临夏回族自治州", "num": [] }
       ],
-      part2Average: 20
+      part2Average: 20,
+      average:0
     }
   },
   created () {
     let self = this;
     self.$nextTick(() => {
-      self.getTopData()
-      self.getBottomData();
+      self.getTopData();
     })
   },
   methods: {
     async getTopData () {
       let self = this;
-      const res = await getAreaAllData()
-      self.part1Data = res;
+      const res = await getAreaAllData();
+      console.log(res)
+      self.part1Data = res.areaCodeList;
       self.drawPart1Chart();
-    },
-    async getBottomData () {
-      let self = this;
-      const res = await getAreaBottomData()
-      self.part2Data = res;
-      for (let i = 0; i < res.length; i++) {
-        self.drawPart2Chart(i, res[i])
+      self.xAxisData=res.provinceMean.map(item=>item.STAT_MONTH);
+      self.average=res.provinceMean.map(item=>item.ORDER_CNT);
+      let part2Data=[];
+      part2Data=Object.keys(res.areaMap).map((item)=>{
+        return{
+          title:item,
+          num:res.areaMap[item].map(i=>i.ORDER_CNT)
+        }
+      })
+      console.log(part2Data)
+     
+      self.part2Data = part2Data;
+      for (let i = 0; i < part2Data.length; i++) {
+        self.drawPart2Chart(i, part2Data[i])
       }
+
     },
+    // async getBottomData () {
+    //   let self = this;
+    //   const res = await getAreaBottomData()
+    //   self.part2Data = res;
+    //   for (let i = 0; i < res.length; i++) {
+    //     self.drawPart2Chart(i, res[i])
+    //   }
+    // },
     drawPart1Chart () {
       let myChart = this.$echarts.init(document.getElementById('part1Chart'))
       let xAxisData = this.part1Data.map(item => item.title);
@@ -174,8 +192,7 @@ export default {
       let self = this;
       if (data) {
         let myChart = self.$echarts.init(document.getElementById(`part2Chart${i}`))
-        let xAxisData = ['5月', '6月', '7月', '8月', '9月', '10月']
-        let average = new Array(data.num.length).fill(self.part2Average);
+        // let average = new Array(data.num.length).fill(self.part2Average);
         let averageIndex = parseInt(data.num.length / 2) - 1
         let option = {
           color: ['rgb(252, 220, 87)'],
@@ -186,7 +203,7 @@ export default {
           xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: xAxisData,
+            data:self.xAxisData,
             axisLabel: {
               color: '#646d9d',
               fontSize: 16
@@ -232,7 +249,7 @@ export default {
             {
               name: '订购量',
               type: 'line',
-              data: average,
+              data: self.average,
               lineStyle: {
                 color: '#eb666c',
                 type: 'dashed'
@@ -243,14 +260,14 @@ export default {
                 position: 'top',
                 color: '#eb666c',
                 fontSize: 16,
-                formatter (value) {
-                  if (value.dataIndex == averageIndex) {
-                    return '全省平均值：' + value.data
-                  } else {
-                    return ''
-                  }
+                // formatter (value) {
+                //   if (value.dataIndex == averageIndex) {
+                //     return '全省平均值：' + value.data
+                //   } else {
+                //     return ''
+                //   }
 
-                }
+                // }
               },
               z: 2
             }

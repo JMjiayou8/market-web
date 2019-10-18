@@ -9,22 +9,22 @@
             <ul class="total-list">
               <li class="total-li">
                 <span class="total-title">活动总量</span>
-                <p class="total-num">897<i class="total-unit">个</i></p>
+                <p class="total-num">{{total.totalActivity}}<i class="total-unit">个</i></p>
               </li>
               <li class="total-li">
                 <span class="total-title">有效活动</span>
-                <p class="total-num">897<i class="total-unit">个</i></p>
+                <p class="total-num">{{total.effectiveActivities}}<i class="total-unit">个</i></p>
               </li>
             </ul>
             <ul class="part1-list">
-              <li v-for="item in part1Data"
-                  :key="item.level"
-                  :class="`part1-item level${item.level}`">
-                <span class="part1-title">{{item.title}}</span>
+              <li v-for="(item,index) in saleInfoList"
+                  :key="index"
+                  :class="`part1-item level${index}`">
+                <span class="part1-title">{{item.SALE_NAME}}</span>
                 <div class="part1-pro">
-                  <span :style="{width:item.num/part1Max*100+'%'}"></span>
+                  <span :style="{width:item.ORDER_CNT/part1Max*100+'%'}"></span>
                 </div>
-                <span class="part1-num">{{item.num}}</span>
+                <span class="part1-num">{{item.ORDER_CNT}}</span>
               </li>
             </ul>
           </div>
@@ -45,7 +45,7 @@
           <div class="total1">
             <span>总订购量</span>
             <ul class="total-list">
-              <li v-for="(item,index) in transBigData(total1)"
+              <li v-for="(item,index) in total1"
                   :key="index"
                   :class="item.type">
                 {{item.text}}
@@ -55,7 +55,7 @@
           <div class="total2">
             <span>总推送量</span>
             <ul class="total-list">
-              <li v-for="(item,index) in transBigData(total2)"
+              <li v-for="(item,index) in total2"
                   :key="index"
                   :class="item.type">
                 {{item.text}}
@@ -96,14 +96,14 @@
                   class="sub-title">TOP 5</span></part-title>
           <div class="part-body">
             <ul class="part4-list">
-              <li v-for="item in part4Data"
-                  :key="item.id"
+              <li v-for="item in products"
+                  :key="item.SERVICE_ID"
                   :class="`part4-item`">
-                <span class="part4-title">{{item.title}}</span>
+                <span class="part4-title">{{item.SERVER_NAME}}</span>
                 <div class="part4-pro">
-                  <span :style="{width:item.num/part4Max*100+'%'}"></span>
+                  <span :style="{width:item.ORDER_CNT/part4Max*100+'%'}"></span>
                 </div>
-                <span class="part4-num">{{item.num}}</span>
+                <span class="part4-num">{{item.ORDER_CNT}}</span>
               </li>
             </ul>
           </div>
@@ -114,89 +114,63 @@
 </template>
 <script>
 import { pieLegendStyle, pieColor } from '@/utils/echartsConfig'
+import {getIndexData} from '@/apis'
 import geoJson from '@/apis/gansu.json'
 import cityJson from '@/apis/gansu_city.json'
 export default {
   data () {
     return {
-      part1Data: [
-        { title: '单产品转融合', num: 67377, level: 1 },
-        { title: '集团客户活动', num: 63463, level: 2 },
-        { title: '不限量流量包20元', num: 52672, level: 3 },
-        { title: '不限量流量包30元', num: 42115, level: 4 },
-        { title: '低销送流量 ', num: 27868, level: 5 }
-      ],
-      part1Max: 70000,
-      part2Data: [
-        {
-          title: '兰州', num: 9826
-        },
-        {
-          title: '嘉峪关', num: 8240
-        },
-        {
-          title: '张掖', num: 8006
-        },
-        {
-          title: '白银', num: 7845
-        },
-        {
-          title: '天水', num: 7017
-        }
-      ],
-      total1: 10637892,
-      total2: 121334300,
-      part3Chart1Data: [{
-        name: "短信",
-        value: 90
+      total:{},
+      saleInfoList: [],
+      part1Max: 0,
+      cityOrders: [],
+      pushOrderCnt:{
+         PUSH_CNT:0,
+        ORDER_CNT:0
       },
-      {
-        name: "外呼",
-        value: 80
-      },
-      {
-        name: "ESS",
-        value: 70
-      },
-      {
-        name: "CBSS",
-        value: 40
-      },
-      {
-        name: "客服",
-        value: 30
-      }
-      ],
-      part3Chart2Data: [{
-        name: "短信",
-        value: 70
-      },
-      {
-        name: "外呼",
-        value: 40
-      },
-      {
-        name: "其它",
-        value: 30
-      }],
-
+      part3Chart1Data: [],
+      part3Chart1Max:200,
+      part3Chart2Data: [],
       part4Max: 70000,
-      part4Data: [
-        { title: '腾讯大王卡59元', num: 67377, id: 1 },
-        { title: '天王卡99元送视频会员', num: 63463, id: 2 },
-        { title: '10元5G流量包', num: 52672, id: 3 },
-        { title: '5元2G流量包', num: 42115, id: 4 },
-        { title: '畅越冰激凌99元套餐', num: 27868, id: 5 }
-      ],
+      products: [],
+      areaCodeList:[]
     }
   },
+  created(){
+    this.getData()
+  },
   mounted () {
-    this.drawPart2Chart();
+
     this.drawMapChart();
-    this.drawPart3Chart1();
-    this.drawPart3Chart2();
+  },
+  computed:{
+    total1(){
+      return this.transBigData(this.pushOrderCnt.ORDER_CNT)
+    },
+    total2(){
+      return this.transBigData(this.pushOrderCnt.PUSH_CNT)
+    }
   },
   methods: {
+    async getData(){
+      let self=this;
+      const res=await getIndexData();
+      self.total=res.total;
+      console.log(res)
+      self.part3Chart1Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.PUSH_CNT||0}}))
+      self.drawPart3Chart1();
+      self.part3Chart2Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.ORDER_CNT||0}}))
+      self.drawPart3Chart2();
+      self.saleInfoList=res.saleInfoList;
+      self.part1Max=500;
+      self.products=res.products;
+      self.part4Max=500;
+      self.pushOrderCnt=res.pushOrderCnt;
+      self.cityOrders=res.cityOrders.map((item=>{return {title:item.AREA_NAME||'',num:item.ORDER_CNT||0}}));
+      self.drawPart2Chart();
+       self.areaCodeList=res.areaCodeList;
+       this.drawMapChart();
+    },
     transBigData (a) {
       return a.toLocaleString().split('').map((item) => {
         return { text: item, type: item == ',' ? 'unit' : "num" }      })
@@ -210,8 +184,8 @@ export default {
     },
     drawPart2Chart () {
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
-      let xAxisData = this.part2Data.map(item => item.title);
-      let yAxisData = this.part2Data.map(item => item.num);
+      let xAxisData = this.cityOrders.map(item => item.title);
+      let yAxisData = this.cityOrders.map(item => item.num);
       let option = {
         color: ['rgb(44, 74, 222)'],
         grid: {
@@ -278,8 +252,8 @@ export default {
       myChart.setOption(option);
     },
     drawPart3Chart1 () {
+      let self=this;
       let myChart = this.$echarts.init(document.getElementById('part3Chart1'))
-
       function getData (data) {
         let res = {
           series: [],
@@ -309,7 +283,7 @@ export default {
               value: data[i].value,
               name: data[i].name
             }, {
-              value: 100 - data[i].value,
+              value: self.part3Chart1Max - data[i].value,
               name: '',
               itemStyle: {
                 color: "rgb(2, 31, 62)",
@@ -329,7 +303,7 @@ export default {
       let option = {
         legend: {
           x: 'center',
-          y: '60%',
+          y: '55%',
           itemGap: 16,
           itemWidth: 15,
           itemHeight: 15,
@@ -379,9 +353,8 @@ export default {
         color: pieColor,
         legend: {
           x: 'center',
-          y: '60%',
-          orient: 'vertical',
-          itemGap: 16,
+          y: '55%',
+          itemGap: 10,
           itemWidth: 15,
           itemHeight: 15,
           icon: 'rect',
@@ -425,7 +398,6 @@ export default {
       let self = this;
       let myChart = self.$echarts.init(document.getElementById('mapChart'))
       self.$echarts.registerMap('gansu', geoJson)
-
       let convertData = function (data) {
         let res = []
         for (let i = 0; i < data.length; i++) {
@@ -482,11 +454,7 @@ export default {
             type: 'heatmap',
             coordinateSystem: 'geo',
             blurSize: 40,
-            data: convertData([
-              { name: '酒泉市', value: 5039 },
-              { name: '张掖市', value: 1000 },
-              { name: '平凉市', value: 3000 }
-            ])
+            data: convertData(self.areaCodeList)
           }
         ]
       }
@@ -549,6 +517,7 @@ export default {
       }
     }
     .part1-list {
+      height:400px;
       .part1-item {
         width: 100%;
         height: 80px;
