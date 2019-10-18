@@ -1,29 +1,20 @@
 # market-app
 
-## Project setup
+> 本地运行
+
 ```
 npm install
-```
-
-### Compiles and hot-reloads for development
-```
 npm run serve
 ```
 
-### Compiles and minifies for production
+> 打包
+
 ```
 npm run build
 ```
 
-### Run your tests
-```
-npm run test
-```
+> 页面路由
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- 首页：/index
+- 活动页：/market
+- 地市页：/area 这个页面有模拟接口请求样例

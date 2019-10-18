@@ -5,7 +5,6 @@
   </div>
 </template>
 <script>
-
 export default {
   computed: {
     getScale () {
@@ -52,6 +51,9 @@ div {
     font-size: 32px;
     margin-left: 10px;
   }
+  p {
+    background: url("./assets/icons/title-cover.png") no-repeat center/cover;
+  }
 }
 
 .page-body {
@@ -63,5 +65,18 @@ div {
   transform-origin: left top 0;
   background: #000 url("./assets/icons/bg.png") no-repeat center/cover;
   box-sizing: border-box;
+}
+.swiper-pagination {
+  position: fixed !important;
+  bottom: 110px !important;
+}
+.swiper-pagination-bullet {
+  width: 69px !important;
+  height: 8px !important;
+  background: rgb(4, 35, 87);
+  border-radius: 10px !important;
+}
+.swiper-pagination-bullet-active {
+  background: #12bba5 !important;
 }
 </style>
