@@ -47,7 +47,7 @@ div {
   line-height: 72px;
   text-align: center;
   text-shadow: 1px 2px 8px rgba(1, 21, 59, 0.004);
-  background: url("./assets/images/title-bg.png") no-repeat center/cover;
+  background: url("./assets/icons/title-bg.png") no-repeat center/cover;
   span {
     font-size: 32px;
     margin-left: 10px;
@@ -61,7 +61,7 @@ div {
   width: 1920px;
   height: 1080px;
   transform-origin: left top 0;
-  background: #000 url("./assets/images/bg.png") no-repeat center/cover;
+  background: #000 url("./assets/icons/bg.png") no-repeat center/cover;
   box-sizing: border-box;
 }
 </style>

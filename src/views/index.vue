@@ -29,7 +29,7 @@
             </ul>
           </div>
         </div>
-        <div class="split"></div>
+
         <div class="index-part part2">
           <part-title title="城市订购量排行">
             <span slot="right"
@@ -77,18 +77,18 @@
           <div class="part-body">
             <div class="chart-wrap left">
               <div id="part3Chart1"
-                   style="width:280px;height:420px;"></div>
+                   style="width:250px;height:420px;"></div>
               <div class="title">推送</div>
             </div>
             <div class="chart-wrap right">
               <div id="part3Chart2"
-                   style="width:280px;height:420px;"></div>
+                   style="width:250px;height:420px;"></div>
               <div class="title">订购</div>
             </div>
 
           </div>
         </div>
-        <div class="split"></div>
+
         <div class="index-part part4">
           <part-title title="产品订购量排行"
                       dir="right">
@@ -217,7 +217,8 @@ export default {
         grid: {
           left: 80,
           top: 25,
-          bottom: 40
+          bottom: 40,
+          right: 10
         },
         xAxis: {
           type: 'category',
@@ -238,7 +239,6 @@ export default {
         },
         yAxis: {
           type: 'value',
-
           axisLine: {
             lineStyle: {
               color: '#151f79'
@@ -331,6 +331,9 @@ export default {
           x: 'center',
           y: '60%',
           itemGap: 16,
+          itemWidth: 15,
+          itemHeight: 15,
+          icon: 'rect',
           formatter: function (name) {
             return "{title|" + name + "}{value|" + (objData[name].value) + "}"
           },
@@ -379,6 +382,9 @@ export default {
           y: '60%',
           orient: 'vertical',
           itemGap: 16,
+          itemWidth: 15,
+          itemHeight: 15,
+          icon: 'rect',
           formatter: function (name) {
             let value = self.part3Chart2Data.find(item => item.name == name).value
             return "{title|" + name + "}{value|" + value + "}"
@@ -435,7 +441,7 @@ export default {
       let option = {
         visualMap: {
           top: 'bottom',
-          left: 40,
+          left: 80,
           color: ['#ff4601', '#fffc00', '#87cffa'],
           min: 800,
           max: 5000,
@@ -447,9 +453,8 @@ export default {
         },
         geo: {
           map: 'gansu',
-          aspectScale: 6 / 7,
-          layoutCenter: ['48%', '55%'],
-          layoutSize: 620,
+          layoutCenter: ['55%', '50%'],
+          layoutSize: 650,
           top: 0,
           label: {
             normal: {
@@ -490,23 +495,33 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .index-page {
   width: 100%;
   height: 100%;
   .page-body {
-    display: flex;
-    margin-top: -60px;
-    justify-content: space-between;
+    position: relative;
+    height: calc(100% - 180px);
+    top: -60px;
+    background: url("../assets/images/indexBg.png") no-repeat center;
     .index-left {
-      width: 540px;
+      position: absolute;
+      top: 0;
+      left: 20px;
+      max-width: 520px;
     }
     .index-center {
-      width: 800px;
+      position: absolute;
+      top: 0;
+      left: 540px;
       margin: 0 20px;
+      min-width: 800px;
     }
     .index-right {
-      width: 540px;
+      position: absolute;
+      top: 0;
+      left: 1390px;
+      max-width: 500px;
     }
   }
   .part1 {
@@ -514,7 +529,7 @@ export default {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin: 30px 10px 15px 10px;
       .total-li {
         width: 45%;
         text-align: center;
@@ -536,9 +551,8 @@ export default {
     .part1-list {
       .part1-item {
         width: 100%;
-        height: 75px;
-        padding: 20px 20px 0 55px;
-        margin-bottom: 10px;
+        height: 80px;
+        padding: 0 20px 0 70px;
         color: #fff;
         display: flex;
         justify-content: space-between;
@@ -577,35 +591,21 @@ export default {
           font-size: 20px;
           margin-left: 20px;
         }
-        &.level1 {
-          background: url("../assets/icons/1.png") no-repeat center/cover;
-        }
-        &.level2 {
-          background: url("../assets/icons/2.png") no-repeat center/cover;
-        }
-        &.level3 {
-          background: url("../assets/icons/3.png") no-repeat center/cover;
-        }
-        &.level4 {
-          background: url("../assets/icons/4.png") no-repeat center/cover;
-        }
-        &.level5 {
-          background: url("../assets/icons/5.png") no-repeat center/cover;
-        }
       }
     }
   }
+  .part2 {
+    margin-top: 45px;
+  }
   .total-wrap {
     width: 100%;
-    height: 260px;
-    background: url("../assets/images/total-down.png") no-repeat center bottom;
+    height: 300px;
     .total-list {
       display: flex;
     }
     .total1 {
       width: 100%;
-      height: 115px;
-      background: url("../assets/images/total-bg.png") no-repeat center;
+      height: 140px;
       font-size: 30px;
       color: rgb(79, 217, 252);
       display: flex;
@@ -640,7 +640,7 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 30px;
+      margin-top: 20px;
       .total-list {
         .num,
         .unit {
@@ -664,14 +664,14 @@ export default {
   .map-wrap {
     width: 100%;
     height: 620px;
-    background: url("../assets/images/map-bg.png") no-repeat center bottom;
+
     position: relative;
     .map-title {
       color: #fff;
       font-size: 24px;
       position: absolute;
-      right: 60px;
-      top: 60px;
+      right: 80px;
+      top: 30px;
     }
   }
   .part3 {
@@ -684,7 +684,7 @@ export default {
         color: #fff;
         font-size: 20px;
         position: absolute;
-        left: 28px;
+        left: 10px;
         top: 16px;
         width: 220px;
         height: 220px;
@@ -702,6 +702,7 @@ export default {
     }
   }
   .part4 {
+    margin-top: 90px;
     .part4-list {
       width: 100%;
       margin: 20px 10px 0 10px;
@@ -748,12 +749,6 @@ export default {
         }
       }
     }
-  }
-  .split {
-    width: 100%;
-    height: 50px;
-    background: url("../assets/images/part-split.png") no-repeat center;
-    background-size: 100% 10px;
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="index-page">
-    <div class="page-top">中国联通营销平台系统<span>(地市)</span></div>
+    <div class="page-top">中国联通营销平台系统总览</div>
     <div class="page-body">
       <div class="index-left">
         <div class="index-part part1">
@@ -64,19 +64,28 @@
           </div>
         </div>
         <div class="map-wrap">
-
+          <p class="map-title">热力图</p>
+          <div id="mapChart"
+               style="width:750px;height:580px;"></div>
         </div>
       </div>
-      <div class="index-right part3">
-        <div class="index-part">
+      <div class="index-right ">
+        <div class="index-part part3">
           <part-title title="触点反馈"
                       dir="right">
           </part-title>
           <div class="part-body">
-            <div id="part3Chart1"
-                 style="width:280px;height:420px;"></div>
-            <div id="part3Chart2"
-                 style="width:280px;height:420px;"></div>
+            <div class="chart-wrap left">
+              <div id="part3Chart1"
+                   style="width:280px;height:420px;"></div>
+              <div class="title">推送</div>
+            </div>
+            <div class="chart-wrap right">
+              <div id="part3Chart2"
+                   style="width:280px;height:420px;"></div>
+              <div class="title">订购</div>
+            </div>
+
           </div>
         </div>
         <div class="split"></div>
@@ -105,7 +114,8 @@
 </template>
 <script>
 import { pieLegendStyle, pieColor } from '@/utils/echartsConfig'
-
+import geoJson from '@/apis/gansu.json'
+import cityJson from '@/apis/gansu_city.json'
 export default {
   data () {
     return {
@@ -180,14 +190,9 @@ export default {
       ],
     }
   },
-  computed: {
-
-  },
-  created () {
-  },
   mounted () {
     this.drawPart2Chart();
-
+    this.drawMapChart();
     this.drawPart3Chart1();
     this.drawPart3Chart2();
   },
@@ -196,18 +201,9 @@ export default {
       return a.toLocaleString().split('').map((item) => {
         return { text: item, type: item == ',' ? 'unit' : "num" }      })
     },
-    getArrayValue (array, key = "value") {
-      var res = [];
-      if (array) {
-        array.forEach(function (t) {
-          res.push(t[key]);
-        });
-      }
-      return res;
-    },
     array2obj (array, key) {
-      var resObj = {};
-      for (var i = 0; i < array.length; i++) {
+      let resObj = {};
+      for (let i = 0; i < array.length; i++) {
         resObj[array[i][key]] = array[i];
       }
       return resObj;
@@ -216,7 +212,7 @@ export default {
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
       let xAxisData = this.part2Data.map(item => item.title);
       let yAxisData = this.part2Data.map(item => item.num);
-      var option = {
+      let option = {
         color: ['rgb(44, 74, 222)'],
         grid: {
           left: 80,
@@ -283,12 +279,9 @@ export default {
     },
     drawPart3Chart1 () {
       let myChart = this.$echarts.init(document.getElementById('part3Chart1'))
-      // let arrName = this.getArrayValue(this.part3Chart1Data, "name");
-      // let arrValue = getArrayValue(data, "value");
-      let objData = this.array2obj(this.part3Chart1Data, "name");
-      let optionData = getData(this.part3Chart1Data)
+
       function getData (data) {
-        var res = {
+        let res = {
           series: [],
           yAxis: []
         };
@@ -296,8 +289,8 @@ export default {
           res.series.push({
             name: '',
             type: 'pie',
-            clockWise: false, //顺时加载
-            hoverAnimation: false, //鼠标移入变大
+            clockWise: false,
+            hoverAnimation: false,
             radius: [73 - i * 8 + '%', 68 - i * 8 + '%'],
             center: ["50%", "30%"],
             label: {
@@ -331,7 +324,9 @@ export default {
         }
         return res;
       }
-      var option = {
+      let objData = this.array2obj(this.part3Chart1Data, "name");
+      let optionData = getData(this.part3Chart1Data)
+      let option = {
         legend: {
           x: 'center',
           y: '60%',
@@ -377,7 +372,7 @@ export default {
     drawPart3Chart2 () {
       let self = this;
       let myChart = this.$echarts.init(document.getElementById('part3Chart2'))
-      var option = {
+      let option = {
         color: pieColor,
         legend: {
           x: 'center',
@@ -420,11 +415,82 @@ export default {
       };
       myChart.setOption(option);
     },
+    drawMapChart () {
+      let self = this;
+      let myChart = self.$echarts.init(document.getElementById('mapChart'))
+      self.$echarts.registerMap('gansu', geoJson)
 
+      let convertData = function (data) {
+        let res = []
+        for (let i = 0; i < data.length; i++) {
+          let geoCoord = cityJson.find(item => item.name == data[i].name)
+          if (geoCoord) {
+            for (let j = 0; j < 3; j++) {
+              res.push(geoCoord.cp.concat(data[i].value))
+            }
+          }
+        }
+        return res
+      }
+      let option = {
+        visualMap: {
+          top: 'bottom',
+          left: 40,
+          color: ['#ff4601', '#fffc00', '#87cffa'],
+          min: 800,
+          max: 5000,
+          calculable: true,
+          textStyle: {
+            color: '#fff',
+            fontSize: 12
+          }
+        },
+        geo: {
+          map: 'gansu',
+          aspectScale: 6 / 7,
+          layoutCenter: ['48%', '55%'],
+          layoutSize: 620,
+          top: 0,
+          label: {
+            normal: {
+              show: true,
+              color: '#fff'
+            },
+            emphasis: {
+              color: '#fff'
+            }
+          },
+          itemStyle: {
+            normal: {
+              areaColor: '#17439a',
+              borderColor: '#fff'
+            },
+            emphasis: {
+              areaColor: '#17439a',
+              borderColor: '#fff'
+            }
+          }
+        },
+        series: [
+          {
+            name: 'AQI',
+            type: 'heatmap',
+            coordinateSystem: 'geo',
+            blurSize: 40,
+            data: convertData([
+              { name: '酒泉市', value: 5039 },
+              { name: '张掖市', value: 1000 },
+              { name: '平凉市', value: 3000 }
+            ])
+          }
+        ]
+      }
+      myChart.setOption(option);
+    }
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .index-page {
   width: 100%;
   height: 100%;
@@ -548,15 +614,18 @@ export default {
       .total-list {
         .num,
         .unit {
-          font-size: 36px;
+          font-size: 60px;
           color: rgb(238, 75, 74);
           font-weight: bold;
         }
         .num {
           background-color: rgba(0, 16, 92, 0.4);
           margin-left: 10px;
-          line-height: 60px;
-          padding: 0 5px;
+          line-height: 66px;
+          min-width: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .unit {
           bottom: -10px;
@@ -581,8 +650,9 @@ export default {
         .num {
           border: 1px solid rgb(76, 249, 255);
           margin-left: 10px;
-          line-height: 42px;
-          padding: 0 5px;
+          line-height: 44px;
+          min-width: 32px;
+          text-align: center;
         }
         .unit {
           bottom: -10px;
@@ -595,10 +665,40 @@ export default {
     width: 100%;
     height: 620px;
     background: url("../assets/icons/map-bg.png") no-repeat center bottom;
+    position: relative;
+    .map-title {
+      color: #fff;
+      font-size: 24px;
+      position: absolute;
+      right: 60px;
+      top: 60px;
+    }
   }
   .part3 {
     .part-body {
       display: flex;
+    }
+    .chart-wrap {
+      position: relative;
+      .title {
+        color: #fff;
+        font-size: 20px;
+        position: absolute;
+        left: 28px;
+        top: 16px;
+        width: 220px;
+        height: 220px;
+        border: 1px solid #052b8d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      &.left {
+        .title {
+          border: 0;
+        }
+      }
     }
   }
   .part4 {

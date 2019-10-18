@@ -177,44 +177,44 @@ export default {
   width: 100%;
   height: 100%;
   .page-body {
-    position: relative;
-    height: calc(100% - 180px);
-    top: -60px;
-    background: url("../assets/images/marketBg.png") no-repeat center;
+    display: flex;
+    margin-top: -60px;
+    justify-content: space-between;
+    padding: 20px 0 0 0;
     .index-left {
-      position: absolute;
-      top: 0;
-      left: 0px;
-      max-width: 520px;
+      width: 540px;
     }
     .index-right {
-      position: absolute;
-      top: 0;
-      left: 540px;
       width: calc(100% - 540px);
-      height: 100%;
+      background: url("../assets/icons/marketRightBg.png") no-repeat left top;
+      position: relative;
+      background-size: contain;
       .right-title {
         color: rgb(0, 255, 255);
         font-size: 30px;
         position: absolute;
-        right: 120px;
-        top: 46px;
-        width: 480px;
-        text-align: center;
+        right: 220px;
+        top: 36px;
       }
     }
   }
   .order-list {
     width: 100%;
+    height: 843px;
+    background: url("../assets/icons/marketLeftBg.png") no-repeat center;
+    overflow: hidden;
     .order-item {
       width: 100%;
-      height: 78px;
-      padding: 20px 20px 0 100px;
+      height: 60px;
+      padding: 0 20px 0 70px;
+      margin-top: 20px;
       color: #fff;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       box-sizing: border-box;
+      background: url("../assets/icons/marketLeftLiBg.png") no-repeat
+        center/cover;
       flex-direction: column;
       position: relative;
       .top-wrap {
@@ -268,6 +268,7 @@ export default {
         content: "";
         width: 40px;
         height: 60px;
+        background: url("../assets/icons/topBg.png") no-repeat center;
         position: absolute;
         top: 0;
         left: 20px;
@@ -277,22 +278,55 @@ export default {
         align-items: center;
         justify-content: center;
       }
+      &.level1::before {
+        background: url("../assets/icons/top1.png") no-repeat center;
+      }
+      &.level2::before {
+        background: url("../assets/icons/top2.png") no-repeat center;
+      }
+      &.level3::before {
+        background: url("../assets/icons/top3.png") no-repeat center;
+      }
+      &.level4::before {
+        content: "4";
+      }
+      &.level5::before {
+        content: "5";
+      }
+      &.level6::before {
+        content: "6";
+      }
+      &.level7::before {
+        content: "7";
+      }
+      &.level8::before {
+        content: "8";
+      }
+      &.level9::before {
+        content: "9";
+      }
+      &.level10::before {
+        content: "10";
+      }
     }
   }
   .part1 {
     .part1-top-title {
       width: 325px;
-      height: 70px;
+      height: 50px;
       font-size: 24px;
       color: #fff;
       text-align: center;
-      line-height: 70px;
+      line-height: 50px;
+      background: url("../assets/icons/market-title.png") no-repeat left center;
     }
   }
+
   .part3 {
     position: absolute;
-    width: 860px;
-    top: 100px;
+    left: 40px;
+    top: 86px;
+    left: 216px;
     .part3-top-title {
       height: 50px;
       font-size: 24px;
@@ -301,35 +335,30 @@ export default {
       line-height: 50px;
       margin-bottom: 20px;
     }
-    .part-body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
   .part4 {
     position: absolute;
-    right: 92px;
-    top: 210px;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+    width: 420px;
+    right: 70px;
+    top: 196px;
     .part4-top-title {
-      width: 200px;
-      height: 60px;
+      height: 50px;
       font-size: 24px;
       color: #fff;
       text-align: center;
-      line-height: 60px;
-      margin-bottom: 15px;
+      line-height: 50px;
+      margin-bottom: 20px;
     }
     .order-list {
       background: none;
       .order-item {
         width: 100%;
-        height: 90px;
-        padding: 0 85px 0 20px;
+        height: 60px;
+        padding: 0 60px 0 20px;
+        margin-top: 20px;
         align-items: flex-end;
+        background: url("../assets/icons/marketRightLiBg.png") no-repeat
+          center/cover;
         flex-direction: column;
         .order-num {
           margin-right: 20px;
