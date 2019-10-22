@@ -21,9 +21,10 @@
                     class="hotel-wrap"
                     ref="mySwiper">
               <swiper-slide v-for="(item,index) in part2data"
-                            :key="item.key"
+                            :key="index"
                             class="hotelItem">
-                <div class="part2-chart-item">
+                <div class="part2-chart-item"
+                     v-if="item">
                   <p class="part2-chart-title">{{item.title}}</p>
                   <div :id="`part2Chart${index}`"
                        style="width:100%;height:340px;"></div>
@@ -39,7 +40,8 @@
   </div>
 </template>
 <script>
-import { getAreaAllData, getAreaBottomData } from '@/apis'
+import { getAreaAllData } from '@/apis'
+let intervel;
 export default {
   data () {
     return {
@@ -47,11 +49,10 @@ export default {
         slidesPerView: 3,
         spaceBetween: 30,
         slidesPerGroup: 3,
-        // 滚动
-        // autoplay: {
-        //   delay: 3000,
-        //   disableOnInteraction: false
-        // },
+        autoplay: {
+          delay: 6000,//每1分钟轮播
+          disableOnInteraction: false
+        },
         // loop: true,
         // loopFillGroupWithBlank: true,
         pagination: {
@@ -59,70 +60,34 @@ export default {
           clickable: true
         },
       },
-      xAxisData:[],
-      part1Data: [],
-      part2data: [
-        { "title": "兰州市", "num": [] },
-        { "title": "嘉峪关市", "num": [] },
-        { "title": "金昌市", "num": [] },
-        { "title": "白银市", "num": [] },
-        { "title": "天水市", "num": [] },
-        { "title": "武威市", "num": [] },
-        { "title": "张掖市", "num": [] },
-        { "title": "平凉市", "num": [] },
-        { "title": "酒泉市", "num": [] },
-        { "title": "庆阳市", "num": [] },
-        { "title": "甘南藏族自治州", "num": [] },
-        { "title": "定西市", "num": [] },
-        { "title": "陇南市", "num": [] },
-        { "title": "临夏回族自治州", "num": [] }
-      ],
-      part2Average: 20,
-      average:0
+      part2data: [],
     }
   },
+  //created和beforeDestroy实现定时器功能
   created () {
     let self = this;
-    self.$nextTick(() => {
-      self.getTopData();
-    })
+    self.getData()
+    intervel = setInterval(function () {
+      self.getData()
+    }, 6000)//1分钟刷新
+  },
+  beforeDestroy () {
+    clearInterval(intervel)
   },
   methods: {
-    async getTopData () {
+    async getData () {
       let self = this;
       const res = await getAreaAllData();
-      console.log(res)
-      self.part1Data = res.areaCodeList;
-      self.drawPart1Chart();
-      self.xAxisData=res.provinceMean.map(item=>item.STAT_MONTH);
-      self.average=res.provinceMean.map(item=>item.ORDER_CNT);
-      let part2Data=[];
-      part2Data=Object.keys(res.areaMap).map((item)=>{
-        return{
-          title:item,
-          num:res.areaMap[item].map(i=>i.ORDER_CNT)
-        }
-      })
-      console.log(part2Data)
-     
-      self.part2Data = part2Data;
-      for (let i = 0; i < part2Data.length; i++) {
-        self.drawPart2Chart(i, part2Data[i])
-      }
-
+      // console.log(res)
+      //全部地市
+      self.drawPart1Chart(res.areaCodeList);
+      //单个地市
+      self.drawPart2Chart(res.provinceMean, res.areaMap)
     },
-    // async getBottomData () {
-    //   let self = this;
-    //   const res = await getAreaBottomData()
-    //   self.part2Data = res;
-    //   for (let i = 0; i < res.length; i++) {
-    //     self.drawPart2Chart(i, res[i])
-    //   }
-    // },
-    drawPart1Chart () {
+    drawPart1Chart (areaCodeList) {
       let myChart = this.$echarts.init(document.getElementById('part1Chart'))
-      let xAxisData = this.part1Data.map(item => item.title);
-      let yAxisData = this.part1Data.map(item => item.num);
+      let xAxisData = areaCodeList.map(item => item.title);
+      let yAxisData = areaCodeList.map(item => item.num);
       let option = {
         color: ['rgb(44, 74, 222)'],
         grid: {
@@ -189,93 +154,96 @@ export default {
       };
       myChart.setOption(option);
     },
-    drawPart2Chart (i, data) {
+    drawPart2Chart (provinceMean, areaMap) {
       let self = this;
-      if (data) {
-        let myChart = self.$echarts.init(document.getElementById(`part2Chart${i}`))
-        // let average = new Array(data.num.length).fill(self.part2Average);
-        let averageIndex = parseInt(data.num.length / 2) - 1
-        let option = {
-          color: ['rgb(252, 220, 87)'],
-          grid: {
-            top: 90,
-            bottom: 30
-          },
-          xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data:self.xAxisData,
-            axisLabel: {
-              color: '#646d9d',
-              fontSize: 16
+      let xAxisData = provinceMean.map(item => item.STAT_MONTH);
+      let part2Average = provinceMean.map(item => item.ORDER_CNT);
+      let part2Data = Object.keys(areaMap).map((item) => {
+        return {
+          title: item,
+          num: areaMap[item].map(i => i.ORDER_CNT)
+        }
+      })
+      self.part2data = part2Data;
+      self.$nextTick(() => {
+        for (let i = 0; i < part2Data.length; i++) {
+          let data = part2Data[i]
+          let myChart = self.$echarts.init(document.getElementById(`part2Chart${i}`))
+          let option = {
+            color: ['rgb(252, 220, 87)'],
+            grid: {
+              top: 90,
+              bottom: 30
             },
-            axisLine: {
-              lineStyle: {
-                color: '#716cbb'
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: xAxisData,
+              axisLabel: {
+                color: '#646d9d',
+                fontSize: 16
+              },
+              axisLine: {
+                lineStyle: {
+                  color: '#716cbb'
+                }
+              },
+            },
+            yAxis: {
+              type: 'value',
+              axisLabel: {
+                color: '#646d9d',
+                fontSize: 16
+              },
+              axisLine: {
+                lineStyle: {
+                  color: '#716cbb'
+                }
+              },
+              splitLine: {
+                show: false
               }
             },
-          },
-          yAxis: {
-            type: 'value',
-            axisLabel: {
-              color: '#646d9d',
-              fontSize: 16
-            },
-            axisLine: {
-              lineStyle: {
-                color: '#716cbb'
+            series: [
+              {
+                name: '订购量',
+                type: 'line',
+                data: data.num,
+                itemStyle: {
+                  shadowColor: 'rgb(252, 220, 87)',
+                  shadowBlur: 20
+                },
+                lineStyle: {
+                  color: 'rgb(252, 220, 87)'
+                },
+                symbolSize: 5,
+                symbol: 'circle',
+                z: 1
+
+              },
+              {
+                name: '订购量',
+                type: 'line',
+                data: part2Average,
+                lineStyle: {
+                  color: '#eb666c',
+                  type: 'dashed'
+                },
+                symbolSize: 1,
+                label: {
+                  show: true,
+                  position: 'top',
+                  color: '#eb666c',
+                  fontSize: 16,
+                },
+                z: 2
               }
-            },
-            splitLine: {
-              show: false
-            }
-          },
-          series: [
-            {
-              name: '订购量',
-              type: 'line',
-              data: data.num,
-              itemStyle: {
-                shadowColor: 'rgb(252, 220, 87)',
-                shadowBlur: 20
-              },
-              lineStyle: {
-                color: 'rgb(252, 220, 87)'
-              },
-              symbolSize: 5,
-              symbol: 'circle',
-              z: 1
+            ]
+          };
+          myChart.setOption(option);
+        }
+      })
 
-            },
-            {
-              name: '订购量',
-              type: 'line',
-              data: self.average,
-              lineStyle: {
-                color: '#eb666c',
-                type: 'dashed'
-              },
-              symbolSize: 1,
-              label: {
-                show: true,
-                position: 'top',
-                color: '#eb666c',
-                fontSize: 16,
-                // formatter (value) {
-                //   if (value.dataIndex == averageIndex) {
-                //     return '全省平均值：' + value.data
-                //   } else {
-                //     return ''
-                //   }
-
-                // }
-              },
-              z: 2
-            }
-          ]
-        };
-        myChart.setOption(option);
-      }
     },
   }
 }

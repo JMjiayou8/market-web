@@ -65,68 +65,68 @@
 <script>
 import { pathSymbols } from '@/utils/echartsConfig'
 import { getMapData } from '@/apis'
-
+let intervel, intervel2;
 export default {
   data () {
     return {
       activeIndex: 0,
       activeTitle: '',
-      part1Data: new Array(10),
+      part1Data: [],
       part1Max: 0,
       part4Max: 0,
       part4Data: [],
-      part2Data: {
-        title: [],
-        data: []
-      },
-
     }
   },
-
-  mounted () {
-    this.getData();
-
+  //created和beforeDestroy实现定时器功能
+  created () {
+    let self = this;
+    self.getData()
+    intervel = setInterval(function () {
+      self.getData()
+    }, 86400000)//1天刷新
   },
   beforeDestroy () {
-    // clearInterval(this.interval);
+    clearInterval(intervel)
+    clearInterval(intervel2)
   },
   methods: {
     async getData () {
       const self = this;
       const res = await getMapData();
-      console.log(res.saleList)
+      // console.log(res.saleList)
+      //活动订购量TOP10
       self.part1Data = res.saleList;
-      let max = Math.max(...res.saleList.map(item => item.num))
-      self.part1Max = max;
+      self.part1Max = Math.max(...res.saleList.map(item => item.num));
       self.setData(res)
-      setInterval(function () {
+      intervel2 = setInterval(function () {
         self.setData(res)
-      }, 6000)//每1分钟轮播6000
+      }, 6000)//每1分钟轮播右侧区域，不需要请求接口
     },
     setData (res) {
       const self = this;
-      let part2Data = res.saleList[self.activeIndex].chnlInfos;
-      self.part2Data = {
-        title: part2Data.map(item => item.CHNL_NAME),
-        data: part2Data.map(item => item.ORDER_CNT),
-      }
+      // 地市TOP5
       self.part4Data = res.saleList[self.activeIndex].areas;
       self.part4Max = Math.max(...self.part4Data.map(item => item.num))
+      //当前轮播活动名称
       self.activeTitle = res.saleList[self.activeIndex].title;
-      self.$nextTick(() => {
-        self.drawPart2Chart();
-        self.activeIndex = (self.activeIndex + 1) % 10;
-      })
+      //触点TOP5
+      self.drawPart2Chart(res.saleList);
+      self.activeIndex = (self.activeIndex + 1) % 10;
     },
-    async drawPart2Chart () {
+    async drawPart2Chart (list) {
       const self = this;
+      let saleList = list[self.activeIndex].chnlInfos;
+      let part2Data = {
+        title: saleList.map(item => item.CHNL_NAME),
+        data: saleList.map(item => item.ORDER_CNT),
+      }
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
       let option = {
         grid: {
           top: 100
         },
         xAxis: {
-          data: self.part2Data.title,
+          data: part2Data.title,
           axisTick: { show: false },
           axisLine: { show: false },
           axisLabel: {
@@ -164,7 +164,7 @@ export default {
               opacity: 1
             }
           },
-          data: self.part2Data.data,
+          data: part2Data.data,
           z: 10
         }, {
           name: 'glyph',
@@ -174,23 +174,23 @@ export default {
           symbolSize: 50,
           symbolOffset: [0, -80],
           data: [{
-            value: self.part2Data.data[0] || 0,
+            value: part2Data.data[0] || 0,
             symbol: pathSymbols.duanxin,
             symbolSize: [50, 40]
           }, {
-            value: self.part2Data.data[1] || 0,
+            value: part2Data.data[1] || 0,
             symbol: pathSymbols.wangting,
             symbolSize: [45, 45]
           }, {
-            value: self.part2Data.data[2] || 0,
+            value: part2Data.data[2] || 0,
             symbol: pathSymbols.kefu,
             symbolSize: [35, 50]
           }, {
-            value: self.part2Data.data[3] || 0,
+            value: part2Data.data[3] || 0,
             symbol: pathSymbols.CBSS,
             symbolSize: [50, 40]
           }, {
-            value: self.part2Data.data[4] || 0,
+            value: part2Data.data[4] || 0,
             symbol: pathSymbols.waifu,
             symbolSize: [40, 50]
           }]
@@ -278,7 +278,7 @@ export default {
       .bottom-wrap {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        // justify-content: space-between;
         .order-pro {
           height: 20px;
           background-image: linear-gradient(
