@@ -129,7 +129,7 @@ export default {
         ORDER_CNT:0
       },
       part3Chart1Data: [],
-      part3Chart1Max:200,
+      part3Chart1Max:100,
       part3Chart2Data: [],
       part4Max: 70000,
       products: [],
@@ -158,13 +158,16 @@ export default {
       self.total=res.total;
       console.log(res)
       self.part3Chart1Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.PUSH_CNT||0}}))
+      self.part3Chart1Max = Math.max(...res.chnlInfos.map(item=>item.PUSH_CNT))+80;
       self.drawPart3Chart1();
       self.part3Chart2Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.ORDER_CNT||0}}))
       self.drawPart3Chart2();
       self.saleInfoList=res.saleInfoList;
-      self.part1Max=500;
+      let max=Math.max(...res.saleInfoList.map(item=>item.ORDER_CNT));
+      //活动最大值
+      self.part1Max=max+200;
       self.products=res.products;
-      self.part4Max=500;
+      self.part4Max=Math.max(...res.products.map(item=>item.ORDER_CNT))+200;
       self.pushOrderCnt=res.pushOrderCnt;
       self.cityOrders=res.cityOrders.map((item=>{return {title:item.AREA_NAME||'',num:item.ORDER_CNT||0}}));
       self.drawPart2Chart();
@@ -254,6 +257,7 @@ export default {
     drawPart3Chart1 () {
       let self=this;
       let myChart = this.$echarts.init(document.getElementById('part3Chart1'))
+      // self.part3Chart1Max = Math.max(...res.chnlInfos.map(item=>item.ORDER_CNT))+100;
       function getData (data) {
         let res = {
           series: [],
