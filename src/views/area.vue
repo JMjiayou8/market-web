@@ -89,7 +89,7 @@ export default {
       let xAxisData = areaCodeList.map(item => item.title);
       let yAxisData = areaCodeList.map(item => item.num);
       let option = {
-        color: ['rgb(44, 74, 222)'],
+        color: ['#3f60b4'],
         grid: {
           left: 80,
           top: 25,
@@ -140,9 +140,9 @@ export default {
           type: 'bar',
           barWidth: 80,
           itemStyle: {
-            borderColor: 'rgb(44, 74, 222)',
+            borderColor: '#4d80e1',
             barBorderRadius: 2,
-            opacity: 0.6
+            opacity: 0.8
           },
           label: {
             show: true,
@@ -209,6 +209,12 @@ export default {
                 name: '订购量',
                 type: 'line',
                 data: data.num,
+                label: {
+                  show: true,
+                  position: 'bottom',
+                  color: '#fff',
+                  fontSize: 16,
+                },
                 itemStyle: {
                   shadowColor: 'rgb(252, 220, 87)',
                   shadowBlur: 20

@@ -123,12 +123,11 @@ export default {
       part1Total: {},
       saleInfoList: [],
       part1Max: 0,
-      cityOrders: [],
       pushOrderCnt: {
         PUSH_CNT: 0,
         ORDER_CNT: 0
       },
-      part4Max: 70000,
+      part4Max: 0,
       products: [],
 
     }
@@ -187,14 +186,12 @@ export default {
       return resObj;
     },
     drawPart2Chart (cityOrders) {
-      const self = this;
-      self.cityOrders = cityOrders.map((item => { return { title: item.AREA_NAME || '', num: item.ORDER_CNT || 0 } }));
-
+      let orderData = cityOrders.map((item => { return { title: item.AREA_NAME || '', num: item.ORDER_CNT || 0 } }));
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
-      let xAxisData = this.cityOrders.map(item => item.title);
-      let yAxisData = this.cityOrders.map(item => item.num);
+      let xAxisData = orderData.map(item => item.title);
+      let yAxisData = orderData.map(item => item.num);
       let option = {
-        color: ['rgb(44, 74, 222)'],
+        color: ['#3f60b4'],
         grid: {
           left: 80,
           top: 25,
@@ -244,9 +241,9 @@ export default {
           type: 'bar',
           barWidth: 34,
           itemStyle: {
-            borderColor: 'rgb(44, 74, 222)',
+            borderColor: '#4d80e1',
             barBorderRadius: 2,
-            opacity: 0.3
+            opacity: 0.6
           },
           label: {
             show: true,
