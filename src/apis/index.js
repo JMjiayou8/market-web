@@ -6,7 +6,7 @@ async function getIndexData () {
   return res.data;
 }
 async function getMapData () {
-  const res = await axios.get(`/mockData/areaAll.json`)
+  const res = await axios.get(`/querySaleList`)
   return res.data;
 }
 async function getAreaAllData () {//全部地市信息

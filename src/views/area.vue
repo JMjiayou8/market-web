@@ -47,6 +47,7 @@ export default {
         slidesPerView: 3,
         spaceBetween: 30,
         slidesPerGroup: 3,
+        // 滚动
         // autoplay: {
         //   delay: 3000,
         //   disableOnInteraction: false

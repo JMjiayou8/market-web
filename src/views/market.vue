@@ -7,20 +7,20 @@
           <div class="part1-top-title">活动订购量TOP10</div>
           <div class="part-body">
             <ul class="order-list">
-              <li v-for="item in part1Data"
-                  :key="item.level"
-                  :class="`order-item level${item.level}`">
-                <p class="top-wrap">
+              <li v-for="(item,index) in part1Data"
+                  :key="index"
+                  :class="`order-item`">
+                 <div v-if="item.title">
+                  <p class="top-wrap">
                   <span class="order-title">{{item.title}}</span>
-                  <span :class="`part1-trend ${item.trend}`">{{item.rate}}</span>
+                  <span :class="`part1-trend ${item.trend}`">{{item.rate}}%</span>
                 </p>
                 <div class="bottom-wrap">
                   <div class="order-pro"
                        :style="{width:item.num/part1Max*240+'px'}">
                   </div>
                   <span class="order-num">{{item.num}}</span>
-                </div>
-
+                </div></div>
               </li>
             </ul>
           </div>
@@ -39,19 +39,20 @@
           <div class="part4-top-title">地市TOP5</div>
           <div class="part-body">
             <ul class="order-list">
-              <li v-for="item in part4Data"
-                  :key="item.level"
-                  :class="`order-item level${item.level}`">
+              <li v-for="(item,index) in part4Data"
+                  :key="index"
+                  :class="`order-item `">
+               <div v-if="item.title">
                 <p class="top-wrap">
                   <span class="order-title">{{item.title}}</span>
                 </p>
                 <div class="bottom-wrap">
                   <span class="order-num">{{item.num}}</span>
                   <div class="order-pro"
-                       :style="{width:item.num/part1Max*240+'px'}">
+                       :style="{width:item.num/part4Max*240+'px'}">
                   </div>
                 </div>
-
+              </div>
               </li>
             </ul>
           </div>
@@ -62,41 +63,58 @@
 </template>
 <script>
 import { pathSymbols } from '@/utils/echartsConfig'
+import {getMapData} from '@/apis'
 export default {
   data () {
     return {
-      part1Data: [
-        { title: '不限量流量包20元', num: 67377, level: 1, rate: '2.63%', trend: 'up' },
-        { title: '集团客户活动', num: 63463, level: 2, rate: '5.3%', trend: 'down' },
-        { title: '不限量流量包20元', num: 52672, level: 3, rate: '0', trend: 'none' },
-        { title: '不限量流量包30元', num: 42115, level: 4, rate: '0', trend: 'none' },
-        { title: '低销送流量 ', num: 27868, level: 5, rate: '0', trend: 'none' },
-        { title: '不限量流量包20元', num: 17377, level: 6, rate: '1.33%', trend: 'up' },
-        { title: '集团客户活动', num: 3463, level: 7, rate: '2.6%', trend: 'down' },
-        { title: '不限量流量包20元', num: 2672, level: 8, rate: '0', trend: 'none' },
-        { title: '不限量流量包30元', num: 1159, level: 9, rate: '0', trend: 'none' },
-        { title: '低销送流量 ', num: 680, level: 10, rate: '0', trend: 'none' }
-      ],
-      part1Max: 70000,
-      part4Data: [
-        { title: '兰州市', num: 67377, level: 1 },
-        { title: '嘉峪关', num: 63463, level: 2 },
-        { title: '张掖市', num: 52672, level: 3 },
-        { title: '武夷市', num: 42115, level: 4 },
-        { title: '天水市 ', num: 27868, level: 5 },
-      ],
+      activeIndex:0,
+      part1Data: new Array(10),
+      part1Max: 0,
+      part4Max:0,
+      part4Data: [],
+      part2Data:{
+        title:[],
+        data:[]
+      }
     }
   },
 
   mounted () {
-    this.drawPart2Chart();
+    this.getData();
+
   },
   methods: {
-    drawPart2Chart () {
+    async getData(){
+      const self=this;
+      const res = await getMapData();
+      console.log(res)
+      let max=Math.max(...res.saleList.map(item=>item.num))
+      self.part1Data= res.saleList;
+      self.part1Max=max;
+      self.part4Data=res.saleList[self.activeIndex].areas;
+      self.part4Max=Math.max(...self.part4Data.map(item=>item.num))
+      let part2Data=res.saleList[self.activeIndex].chnlInfos;
+      self.part2Data={
+       title: part2Data.map(item=>item.CHNL_NAME),
+       data: part2Data.map(item=>item.ORDER_CNT),
+      }
+      self.$nextTick(()=>{
+        console.log(self.part2Data)
+        self.drawPart2Chart();
+      })
+          
+
+
+    },
+    async drawPart2Chart () {
+      const self=this;
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
       let option = {
+        grid:{
+          top:100
+        },
         xAxis: {
-          data: ['短信', '网厅', '客服', 'CBSS', '外呼'],
+          data: self.part2Data.title,
           axisTick: { show: false },
           axisLine: { show: false },
           axisLabel: {
@@ -117,7 +135,6 @@ export default {
           name: 'hill',
           type: 'pictorialBar',
           barCategoryGap: '-130%',
-
           symbol: 'path://M0,10 L10,10 C5.5,10 5.5,5 5,0 C4.5,5 4.5,10 0,10 z',
           label: {
             show: true,
@@ -135,7 +152,7 @@ export default {
               opacity: 1
             }
           },
-          data: [123, 60, 25, 18, 12],
+          data: self.part2Data.data,
           z: 10
         }, {
           name: 'glyph',
@@ -145,23 +162,23 @@ export default {
           symbolSize: 50,
           symbolOffset: [0, -80],
           data: [{
-            value: 123,
+            value:self.part2Data.data[0]||0,
             symbol: pathSymbols.duanxin,
             symbolSize: [50, 40]
           }, {
-            value: 60,
+            value:self.part2Data.data[1]||0,
             symbol: pathSymbols.wangting,
             symbolSize: [45, 45]
           }, {
-            value: 25,
+            value: self.part2Data.data[2]||0,
             symbol: pathSymbols.kefu,
             symbolSize: [35, 50]
           }, {
-            value: 18,
+            value: self.part2Data.data[3]||0,
             symbol: pathSymbols.CBSS,
             symbolSize: [50, 40]
           }, {
-            value: 12,
+            value: self.part2Data.data[4]||0,
             symbol: pathSymbols.waifu,
             symbolSize: [40, 50]
           }]
