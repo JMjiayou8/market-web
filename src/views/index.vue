@@ -114,65 +114,78 @@
 </template>
 <script>
 import { pieLegendStyle, pieColor } from '@/utils/echartsConfig'
-import {getIndexData} from '@/apis'
+import { getIndexData } from '@/apis'
 import geoJson from '@/apis/gansu.json'
-import cityJson from '@/apis/gansu_city.json'
+let intervel = null;
 export default {
   data () {
     return {
-      total:{},
+      total: {},
       saleInfoList: [],
       part1Max: 0,
       cityOrders: [],
-      pushOrderCnt:{
-         PUSH_CNT:0,
-        ORDER_CNT:0
+      pushOrderCnt: {
+        PUSH_CNT: 0,
+        ORDER_CNT: 0
       },
       part3Chart1Data: [],
-      part3Chart1Max:100,
+      part3Chart1Max: 100,
       part3Chart2Data: [],
       part4Max: 70000,
       products: [],
-      areaCodeList:[]
+      areaCodeList: [],
+      mapMax: 100,
+      mapMin: 0,
     }
   },
-  created(){
-    this.getData()
+  created () {
+    let self = this;
+    intervel = setInterval(function () {
+      self.getData()
+    }, 1000)
   },
-  mounted () {
-
-    this.drawMapChart();
+  beforeDestroy () {
+    clearInterval(intervel)
   },
-  computed:{
-    total1(){
+  computed: {
+    total1 () {
       return this.transBigData(this.pushOrderCnt.ORDER_CNT)
     },
-    total2(){
+    total2 () {
       return this.transBigData(this.pushOrderCnt.PUSH_CNT)
     }
   },
   methods: {
-    async getData(){
-      let self=this;
-      const res=await getIndexData();
-      self.total=res.total;
+    async getData () {
+      let self = this;
+      self.areaCodeList = [];
+      const res = await getIndexData();
+      self.total = res.total;
       console.log(res)
-      self.part3Chart1Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.PUSH_CNT||0}}))
-      self.part3Chart1Max = Math.max(...res.chnlInfos.map(item=>item.PUSH_CNT))+80;
+      self.part3Chart1Data = res.chnlInfos.map((item => { return { name: item.CHNL_NAME || '', value: item.PUSH_CNT || 0 } }))
+      self.part3Chart1Max = Math.max(...res.chnlInfos.map(item => item.PUSH_CNT)) + 80;
       self.drawPart3Chart1();
-      self.part3Chart2Data=res.chnlInfos.map((item=>{return {name:item.CHNL_NAME||'',value:item.ORDER_CNT||0}}))
+      self.part3Chart2Data = res.chnlInfos.map((item => { return { name: item.CHNL_NAME || '', value: item.ORDER_CNT || 0 } }))
       self.drawPart3Chart2();
-      self.saleInfoList=res.saleInfoList;
-      let max=Math.max(...res.saleInfoList.map(item=>item.ORDER_CNT));
+      self.saleInfoList = res.saleInfoList;
+      let max = Math.max(...res.saleInfoList.map(item => item.ORDER_CNT));
       //活动最大值
-      self.part1Max=max+200;
-      self.products=res.products;
-      self.part4Max=Math.max(...res.products.map(item=>item.ORDER_CNT))+200;
-      self.pushOrderCnt=res.pushOrderCnt;
-      self.cityOrders=res.cityOrders.map((item=>{return {title:item.AREA_NAME||'',num:item.ORDER_CNT||0}}));
+      self.part1Max = max + 200;
+      self.products = res.products;
+      self.part4Max = Math.max(...res.products.map(item => item.ORDER_CNT)) + 200;
+      self.pushOrderCnt = res.pushOrderCnt;
+      self.cityOrders = res.cityOrders.map((item => { return { title: item.AREA_NAME || '', num: item.ORDER_CNT || 0 } }));
       self.drawPart2Chart();
-       self.areaCodeList=res.areaCodeList;
-       this.drawMapChart();
+      let areaCodeList = res.areaCodeList.map((item) => {
+        return [item.LONGITUDE, item.LATITUDE, item.num]
+      });
+
+      areaCodeList.map(item => {//扩大热力图效果
+        self.areaCodeList.push(...new Array(3).fill(item))
+      })
+      self.mapMax = Math.max(...res.areaCodeList.map(item => item.num))
+      self.mapMin = Math.min(...res.areaCodeList.map(item => item.num))
+      self.drawMapChart();
     },
     transBigData (a) {
       return a.toLocaleString().split('').map((item) => {
@@ -255,7 +268,7 @@ export default {
       myChart.setOption(option);
     },
     drawPart3Chart1 () {
-      let self=this;
+      let self = this;
       let myChart = this.$echarts.init(document.getElementById('part3Chart1'))
       // self.part3Chart1Max = Math.max(...res.chnlInfos.map(item=>item.ORDER_CNT))+100;
       function getData (data) {
@@ -308,7 +321,7 @@ export default {
         legend: {
           x: 'center',
           y: '55%',
-          itemGap: 16,
+          itemGap: 20,
           itemWidth: 15,
           itemHeight: 15,
           icon: 'rect',
@@ -358,7 +371,7 @@ export default {
         legend: {
           x: 'center',
           y: '55%',
-          itemGap: 10,
+          itemGap: 20,
           itemWidth: 15,
           itemHeight: 15,
           icon: 'rect',
@@ -399,28 +412,17 @@ export default {
       myChart.setOption(option);
     },
     drawMapChart () {
-      let self = this;
+      const self = this;
       let myChart = self.$echarts.init(document.getElementById('mapChart'))
       self.$echarts.registerMap('gansu', geoJson)
-      let convertData = function (data) {
-        let res = []
-        for (let i = 0; i < data.length; i++) {
-          let geoCoord = cityJson.find(item => item.name == data[i].name)
-          if (geoCoord) {
-            for (let j = 0; j < 3; j++) {
-              res.push(geoCoord.cp.concat(data[i].value))
-            }
-          }
-        }
-        return res
-      }
+
       let option = {
         visualMap: {
           top: 'bottom',
           left: 80,
           color: ['#ff4601', '#fffc00', '#87cffa'],
-          min: 800,
-          max: 5000,
+          min: self.mapMin,
+          max: self.mapMax,
           calculable: true,
           textStyle: {
             color: '#fff',
@@ -458,7 +460,7 @@ export default {
             type: 'heatmap',
             coordinateSystem: 'geo',
             blurSize: 40,
-            data: convertData(self.areaCodeList)
+            data: self.areaCodeList
           }
         ]
       }
@@ -521,7 +523,7 @@ export default {
       }
     }
     .part1-list {
-      height:400px;
+      height: 400px;
       .part1-item {
         width: 100%;
         height: 80px;

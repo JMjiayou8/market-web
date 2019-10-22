@@ -10,24 +10,25 @@
               <li v-for="(item,index) in part1Data"
                   :key="index"
                   :class="`order-item`">
-                 <div v-if="item.title">
+                <div v-if="item">
                   <p class="top-wrap">
-                  <span class="order-title">{{item.title}}</span>
-                  <span :class="`part1-trend ${item.trend}`">{{item.rate}}%</span>
-                </p>
-                <div class="bottom-wrap">
-                  <div class="order-pro"
-                       :style="{width:item.num/part1Max*240+'px'}">
+                    <span class="order-title">{{item.title}}</span>
+                    <span :class="`part1-trend ${item.trend}`">{{item.rate}}%</span>
+                  </p>
+                  <div class="bottom-wrap">
+                    <div class="order-pro"
+                         :style="{width:item.num/part1Max*240+'px'}">
+                    </div>
+                    <span class="order-num">{{item.num}}</span>
                   </div>
-                  <span class="order-num">{{item.num}}</span>
-                </div></div>
+                </div>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="index-right ">
-        <p class="right-title">不限量流量包20元</p>
+        <p class="right-title">{{activeTitle}}</p>
         <div class="index-part part3">
           <div class="part3-top-title">触点TOP5</div>
           <div class="part-body">
@@ -42,17 +43,17 @@
               <li v-for="(item,index) in part4Data"
                   :key="index"
                   :class="`order-item `">
-               <div v-if="item.title">
-                <p class="top-wrap">
-                  <span class="order-title">{{item.title}}</span>
-                </p>
-                <div class="bottom-wrap">
-                  <span class="order-num">{{item.num}}</span>
-                  <div class="order-pro"
-                       :style="{width:item.num/part4Max*240+'px'}">
+                <div v-if="item">
+                  <p class="top-wrap">
+                    <span class="order-title">{{item.title}}</span>
+                  </p>
+                  <div class="bottom-wrap">
+                    <span class="order-num">{{item.num}}</span>
+                    <div class="order-pro"
+                         :style="{width:item.num/part4Max*240+'px'}">
+                    </div>
                   </div>
                 </div>
-              </div>
               </li>
             </ul>
           </div>
@@ -63,19 +64,22 @@
 </template>
 <script>
 import { pathSymbols } from '@/utils/echartsConfig'
-import {getMapData} from '@/apis'
+import { getMapData } from '@/apis'
+
 export default {
   data () {
     return {
-      activeIndex:0,
+      activeIndex: 0,
+      activeTitle: '',
       part1Data: new Array(10),
       part1Max: 0,
-      part4Max:0,
+      part4Max: 0,
       part4Data: [],
-      part2Data:{
-        title:[],
-        data:[]
-      }
+      part2Data: {
+        title: [],
+        data: []
+      },
+
     }
   },
 
@@ -83,35 +87,43 @@ export default {
     this.getData();
 
   },
+  beforeDestroy () {
+    // clearInterval(this.interval);
+  },
   methods: {
-    async getData(){
-      const self=this;
+    async getData () {
+      const self = this;
       const res = await getMapData();
-      console.log(res)
-      let max=Math.max(...res.saleList.map(item=>item.num))
-      self.part1Data= res.saleList;
-      self.part1Max=max;
-      self.part4Data=res.saleList[self.activeIndex].areas;
-      self.part4Max=Math.max(...self.part4Data.map(item=>item.num))
-      let part2Data=res.saleList[self.activeIndex].chnlInfos;
-      self.part2Data={
-       title: part2Data.map(item=>item.CHNL_NAME),
-       data: part2Data.map(item=>item.ORDER_CNT),
+      console.log(res.saleList)
+      self.part1Data = res.saleList;
+      let max = Math.max(...res.saleList.map(item => item.num))
+      self.part1Max = max;
+      self.setData(res)
+      setInterval(function () {
+        self.setData(res)
+      }, 6000)//每1分钟轮播6000
+    },
+    setData (res) {
+      const self = this;
+      let part2Data = res.saleList[self.activeIndex].chnlInfos;
+      self.part2Data = {
+        title: part2Data.map(item => item.CHNL_NAME),
+        data: part2Data.map(item => item.ORDER_CNT),
       }
-      self.$nextTick(()=>{
-        console.log(self.part2Data)
+      self.part4Data = res.saleList[self.activeIndex].areas;
+      self.part4Max = Math.max(...self.part4Data.map(item => item.num))
+      self.activeTitle = res.saleList[self.activeIndex].title;
+      self.$nextTick(() => {
         self.drawPart2Chart();
+        self.activeIndex = (self.activeIndex + 1) % 10;
       })
-          
-
-
     },
     async drawPart2Chart () {
-      const self=this;
+      const self = this;
       let myChart = this.$echarts.init(document.getElementById('part2Chart'))
       let option = {
-        grid:{
-          top:100
+        grid: {
+          top: 100
         },
         xAxis: {
           data: self.part2Data.title,
@@ -162,23 +174,23 @@ export default {
           symbolSize: 50,
           symbolOffset: [0, -80],
           data: [{
-            value:self.part2Data.data[0]||0,
+            value: self.part2Data.data[0] || 0,
             symbol: pathSymbols.duanxin,
             symbolSize: [50, 40]
           }, {
-            value:self.part2Data.data[1]||0,
+            value: self.part2Data.data[1] || 0,
             symbol: pathSymbols.wangting,
             symbolSize: [45, 45]
           }, {
-            value: self.part2Data.data[2]||0,
+            value: self.part2Data.data[2] || 0,
             symbol: pathSymbols.kefu,
             symbolSize: [35, 50]
           }, {
-            value: self.part2Data.data[3]||0,
+            value: self.part2Data.data[3] || 0,
             symbol: pathSymbols.CBSS,
             symbolSize: [50, 40]
           }, {
-            value: self.part2Data.data[4]||0,
+            value: self.part2Data.data[4] || 0,
             symbol: pathSymbols.waifu,
             symbolSize: [40, 50]
           }]
@@ -331,6 +343,7 @@ export default {
     display: flex;
     align-items: center;
     flex-direction: column;
+    min-width: 420px;
     .part4-top-title {
       width: 200px;
       height: 60px;
@@ -348,6 +361,9 @@ export default {
         padding: 0 85px 0 20px;
         align-items: flex-end;
         flex-direction: column;
+        .top-wrap {
+          text-align: right;
+        }
         .order-num {
           margin-right: 20px;
         }
