@@ -26,6 +26,14 @@ export default {
       arr: ['index', 'market', 'area']
     }
   },
+  created () {
+    let self = this;
+    let i = 0;
+    setInterval(function () {
+      self.$router.push(self.arr[i]);
+      i = (i + 1) % 3;
+    }, 1000 *2)
+  },
   methods: {
     goOtherPage (dir) {
       let self = this;
