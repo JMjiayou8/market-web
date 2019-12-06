@@ -1,7 +1,17 @@
 <template>
   <div id="app"
        :style="{transform:getScale}">
+    <div class="pre-page"
+         @click="goOtherPage('prev')">
+      <img :src="require('@/assets/images/left.png')"
+           alt="">
+    </div>
     <router-view />
+    <div class="next-page"
+         @click="goOtherPage('next')">
+      <img :src="require('@/assets/images/right.png')"
+           alt="">
+    </div>
   </div>
 </template>
 <script>
@@ -10,6 +20,19 @@ export default {
     getScale () {
       return 'scale(' + document.body.clientWidth / 1920 + ',' + document.body.clientWidth / 1920 + ')'
     }
+  },
+  data () {
+    return {
+      arr: ['index', 'market', 'area']
+    }
+  },
+  methods: {
+    goOtherPage (dir) {
+      let self = this;
+      let index = self.arr.indexOf(self.$route.name)
+      let newIndex = dir == 'prev' ? (index + 2) % 3 : (index + 1) % 3;
+      self.$router.push({ name: self.arr[newIndex] })
+    },
   }
 }
 </script>
@@ -78,5 +101,32 @@ div {
 }
 .swiper-pagination-bullet-active {
   background: #12bba5 !important;
+}
+
+.pre-page,
+.next-page {
+  width: 200px;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  cursor: pointer;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  img {
+    display: none;
+  }
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+    img {
+      display: block;
+    }
+  }
+}
+.pre-page {
+  left: 0;
+}
+.next-page {
+  right: 0;
 }
 </style>

@@ -79,10 +79,10 @@ export default {
   },
   //created和beforeDestroy实现定时器功能
   created () {
-    let self = this;
-    self.getData()
+    // let self = this;
+    // self.getData()
     intervel = setInterval(function () {
-      self.getData()
+      // self.getData()
     }, 86400000)//1天刷新
   },
   beforeDestroy () {

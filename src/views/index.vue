@@ -110,6 +110,7 @@
         </div>
       </div>
     </div>
+   
   </div>
 </template>
 <script>
@@ -134,10 +135,10 @@ export default {
   },
   //created和beforeDestroy实现定时器功能
   created () {
-    let self = this;
-    self.getData()
+    // let self = this;
+    // self.getData()
     intervel = setInterval(function () {
-      self.getData()
+      // self.getData()
     }, 6000)//1分钟刷新
   },
   beforeDestroy () {
