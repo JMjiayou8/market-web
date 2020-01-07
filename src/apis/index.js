@@ -1,5 +1,5 @@
 import axios from "axios"
-axios.defaults.baseURL = '';
+axios.defaults.baseURL = process.env.NODE_ENV == 'dev' ? '' : '/dist';
 
 
 async function getMapData () {
